@@ -143,15 +143,13 @@ func TestSiteMap_ToXMLSTDSiteMap(t *testing.T) {
 	}
 
 	f := fields{
-		URLs: map[string]struct{}{"https://exA": {},
-			"https://exB": {}},
+		URLs: map[string]struct{}{"https://exA": {}},
 		Connections: make(
 			map[string]map[string]struct{}),
 	}
 
 	want := `<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">` +
-		`<url><loc>https://exA</loc></url>` +
-		`<url><loc>https://exB</loc></url></urlset>`
+		`<url><loc>https://exA</loc></url></urlset>`
 	tests := []struct {
 		name    string
 		fields  fields
