@@ -59,7 +59,7 @@ func TestSiteMap_AddURL(t *testing.T) {
 		{
 			name: "TestSiteMap_AddURL - 2 neg",
 			fields: fields{
-				URLs: map[string]struct{}{eURL: struct{}{}},
+				URLs: map[string]struct{}{eURL: {}},
 				Connections: make(
 					map[string]map[string]struct{}),
 			},
@@ -94,26 +94,8 @@ func TestSiteMap_AddConnection(t *testing.T) {
 	a := "URL a"
 	b := "URL b"
 	fieldsWithNoConnection := fields{
-		URLs: map[string]struct{}{a: struct{}{},
-			b: struct{}{}},
-		Connections: make(
-			map[string]map[string]struct{}),
-	}
-	fieldsWithConnectionA2B := fields{
-		URLs: map[string]struct{}{a: struct{}{},
-			b: struct{}{}},
-		Connections: map[string]map[string]struct{}{
-			a: {b: struct{}{}}},
-	}
-	fieldsWithNoA := fields{
-		URLs: map[string]struct{}{
-			b: struct{}{}},
-		Connections: make(
-			map[string]map[string]struct{}),
-	}
-	fieldsWithNoB := fields{
-		URLs: map[string]struct{}{
-			a: struct{}{}},
+		URLs: map[string]struct{}{a: {},
+			b: {}},
 		Connections: make(
 			map[string]map[string]struct{}),
 	}
@@ -122,8 +104,7 @@ func TestSiteMap_AddConnection(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   bool
-		want1  bool
+		want   *SiteMap
 	}{
 		{
 			name:   "TestSiteMap_AddConnection - 1 pos",
@@ -132,38 +113,12 @@ func TestSiteMap_AddConnection(t *testing.T) {
 				u: a,
 				v: b,
 			},
-			want:  true,
-			want1: true,
-		},
-		{
-			name:   "TestSiteMap_AddConnection - 2 neg",
-			fields: fieldsWithNoA,
-			args: args{
-				u: a,
-				v: b,
+			want: &SiteMap{
+				URLs: map[string]struct{}{a: {}, b: {}},
+				Connections: map[string]map[string]struct{}{
+					a: {b: struct{}{}},
+				},
 			},
-			want:  false,
-			want1: false,
-		},
-		{
-			name:   "TestSiteMap_AddConnection - 3 neg",
-			fields: fieldsWithNoB,
-			args: args{
-				u: a,
-				v: b,
-			},
-			want:  false,
-			want1: false,
-		},
-		{
-			name:   "TestSiteMap_AddConnection - 3 neg",
-			fields: fieldsWithConnectionA2B,
-			args: args{
-				u: a,
-				v: b,
-			},
-			want:  true,
-			want1: false,
 		},
 	}
 	for _, tt := range tests {
@@ -172,12 +127,10 @@ func TestSiteMap_AddConnection(t *testing.T) {
 				URLs:        tt.fields.URLs,
 				Connections: tt.fields.Connections,
 			}
-			got, got1 := s.AddConnection(tt.args.u, tt.args.v)
-			if got != tt.want {
-				t.Errorf("SiteMap.AddConnection() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("SiteMap.AddConnection() got1 = %v, want %v", got1, tt.want1)
+			s.AddConnection(tt.args.u, tt.args.v)
+
+			if !reflect.DeepEqual(tt.want, s) {
+				t.Errorf("\nNew() = %v, \n want  = %v", s, tt.want)
 			}
 		})
 	}
