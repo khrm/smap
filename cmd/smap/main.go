@@ -1,0 +1,74 @@
+package main
+
+import (
+	"encoding/json"
+	"flag"
+	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"net/url"
+	"os"
+	"time"
+
+	"github.com/khrm/smap/internal/crawler"
+	"github.com/khrm/smap/internal/parser"
+	"github.com/khrm/smap/internal/sitemap"
+)
+
+var (
+	logger = log.New(os.Stdout, "logger: ", log.Lshortfile)
+)
+
+var httpClient = &http.Client{
+	Transport: &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ResponseHeaderTimeout: 10 * time.Second,
+	},
+}
+
+func main() {
+	domain := flag.String("domain", "goharbor.io", "domain to crawl")
+	depth := flag.Int("depth", 13, "depth to crawl")
+	root := flag.Bool("root", true, "restrict to only domain given")
+	scheme := flag.String("scheme", "https",
+		"scheme of the domain like http")
+	flag.Parse()
+
+	p := parser.New(httpClient, logger)
+
+	s := sitemap.New()
+	c := crawler.NewConfig(*root, *depth)
+	u, err := url.Parse(*domain)
+	if err != nil {
+		log.Println("Failed")
+
+	}
+
+	if *depth < 1 {
+		logger.Println("Invalid depth entered")
+	}
+
+	if u.Scheme == "" {
+		u.Scheme = *scheme
+	}
+
+	if u.Host == "" {
+		u.Host = u.Path
+		u.Path = ""
+	}
+
+	cl := crawler.New(u, p, logger, s)
+
+	cl.Crawl(u, c)
+
+	data, err := json.MarshalIndent(cl.SM, "  ", "    ")
+	if err != nil {
+		log.Println("error marshaling data to json", err)
+	}
+	fmt.Println(string(data))
+}
