@@ -1,6 +1,9 @@
 package sitemap
 
-import "sync"
+import (
+	"encoding/xml"
+	"sync"
+)
 
 // SiteMap DataStructure containing urls and connections
 // SiteMap is just a graph
@@ -44,6 +47,22 @@ func (s *SiteMap) AddConnection(u, v string) {
 }
 
 // ToXMLSTDSiteMap gives you standardise sitemap give root url
-func (s *SiteMap) ToXMLSTDSiteMap(root string) string {
-	return ""
+func (s *SiteMap) ToXMLSTDSiteMap() ([]byte, error) {
+	xsm := struct {
+		XMLName   xml.Name `xml:"urlset"`
+		XMLnsAttr string   `xml:"xmlns,attr"`
+		URL       []struct {
+			Loc string `xml:"loc"`
+		} `xml:"url"`
+	}{
+		XMLnsAttr: "https://www.sitemaps.org/schemas/sitemap/0.9",
+	}
+	for i := range s.URLs {
+		xsm.URL = append(xsm.URL, struct {
+			Loc string `xml:"loc"`
+		}{i})
+	}
+
+	return xml.Marshal(xsm)
+
 }

@@ -40,8 +40,8 @@ func main() {
 	debug := flag.Bool("debug", false, "whether to print everything")
 	scheme := flag.String("scheme", "https",
 		"scheme of the domain like http")
-	//standardSiteMap := flag.Bool("stdsmap", true, "whether to"+
-	//	" print standard sitemap xml")
+	stdXMLSiteMap := flag.Bool("stdsmap", true, "whether to"+
+		" print standard sitemap xml")
 
 	flag.Parse()
 
@@ -78,4 +78,12 @@ func main() {
 		log.Println("error marshaling data to json", err)
 	}
 	fmt.Println(string(data))
+
+	if *stdXMLSiteMap {
+		xsm, err := cl.SM.ToXMLSTDSiteMap()
+		if err != nil {
+			log.Println("error marshaling data to xml", err)
+		}
+		fmt.Println("StdSiteMap:\n", string(xsm))
+	}
 }

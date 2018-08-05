@@ -135,3 +135,51 @@ func TestSiteMap_AddConnection(t *testing.T) {
 		})
 	}
 }
+
+func TestSiteMap_ToXMLSTDSiteMap(t *testing.T) {
+	type fields struct {
+		URLs        map[string]struct{}
+		Connections map[string]map[string]struct{}
+	}
+
+	f := fields{
+		URLs: map[string]struct{}{"https://exA": {},
+			"https://exB": {}},
+		Connections: make(
+			map[string]map[string]struct{}),
+	}
+
+	want := `<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">` +
+		`<url><loc>https://exA</loc></url>` +
+		`<url><loc>https://exB</loc></url></urlset>`
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name:    "TestSiteMap_ToXMLSTDSiteMap",
+			fields:  f,
+			want:    []byte(want),
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &SiteMap{
+				URLs:        tt.fields.URLs,
+				Connections: tt.fields.Connections,
+			}
+			got, err := s.ToXMLSTDSiteMap()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SiteMap.ToXMLSTDSiteMap() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SiteMap.ToXMLSTDSiteMap() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
