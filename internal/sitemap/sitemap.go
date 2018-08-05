@@ -42,3 +42,8 @@ func (s *SiteMap) AddConnection(u, v string) {
 	}
 	s.Connections[u][v] = struct{}{}
 }
+
+// ToXMLSTDSiteMap gives you standardise sitemap give root url
+func (s *SiteMap) ToXMLSTDSiteMap(root string) string {
+	return ""
+}

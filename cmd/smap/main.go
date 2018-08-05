@@ -35,11 +35,14 @@ var wg sync.WaitGroup
 
 func main() {
 	domain := flag.String("domain", "goharbor.io", "domain to crawl")
-	depth := flag.Int("depth", 13, "depth to crawl")
+	depth := flag.Int("depth", 3, "depth to crawl")
 	root := flag.Bool("root", true, "restrict to only domain given")
 	debug := flag.Bool("debug", false, "whether to print everything")
 	scheme := flag.String("scheme", "https",
 		"scheme of the domain like http")
+	//standardSiteMap := flag.Bool("stdsmap", true, "whether to"+
+	//	" print standard sitemap xml")
+
 	flag.Parse()
 
 	p := parser.New(httpClient, logger, *debug)

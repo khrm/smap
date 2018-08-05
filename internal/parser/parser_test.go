@@ -18,6 +18,7 @@ func TestNew(t *testing.T) {
 	type args struct {
 		client transportClient
 		l      *log.Logger
+		debug  bool
 	}
 	tests := []struct {
 		name string
@@ -29,16 +30,18 @@ func TestNew(t *testing.T) {
 			args: args{
 				client: &http.Client{},
 				l:      log.New(os.Stdout, "logger: ", log.Lshortfile),
+				debug:  true,
 			},
 			want: &parser{
 				client: &http.Client{},
 				log:    log.New(os.Stdout, "logger: ", log.Lshortfile),
+				debug:  true,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.args.client, tt.args.l); !reflect.DeepEqual(got, tt.want) {
+			if got := New(tt.args.client, tt.args.l, true); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("New() = %v, want %v", got, tt.want)
 			}
 		})
