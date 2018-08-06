@@ -25,12 +25,12 @@ func TestNewConfig(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *Config
+		want *CondConfig
 	}{
 		{
 			name: "TestNewConfig - 1",
 			args: args{true, 3},
-			want: &Config{
+			want: &CondConfig{
 				RootOnly: true,
 				Depth:    3,
 			},
@@ -144,7 +144,7 @@ func Test_service_Crawl(t *testing.T) {
 	}
 	type args struct {
 		u *url.URL
-		c *Config
+		c *CondConfig
 	}
 
 	u, _ := url.Parse("https://goharbor.io")
@@ -250,7 +250,7 @@ func Test_service_Crawl(t *testing.T) {
 			fields: f1,
 			args: args{
 				u: u,
-				c: &Config{
+				c: &CondConfig{
 					true,
 					13,
 				},
@@ -262,7 +262,7 @@ func Test_service_Crawl(t *testing.T) {
 			fields: f2,
 			args: args{
 				u: u,
-				c: &Config{
+				c: &CondConfig{
 					true,
 					0,
 				},
@@ -283,7 +283,7 @@ func Test_service_Crawl(t *testing.T) {
 			fields: f3,
 			args: args{
 				u: uFail,
-				c: &Config{
+				c: &CondConfig{
 					true,
 					13,
 				},

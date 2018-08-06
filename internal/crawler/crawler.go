@@ -15,17 +15,17 @@ var (
 	errInvalidURL = errors.New("link isn't valid")
 )
 
-// Config is used to determine certain configs like
-// whether only root url are going to be extracted
-// depth of the query
-type Config struct {
+// CondConfig is used to determine certain conditional
+// configs like whether only root url are going to be
+// extracted or depth of the query
+type CondConfig struct {
 	RootOnly bool
 	Depth    int
 }
 
 // NewConfig gives an instance of config
-func NewConfig(r bool, d int) *Config {
-	return &Config{
+func NewConfig(r bool, d int) *CondConfig {
+	return &CondConfig{
 		RootOnly: r,
 		Depth:    d,
 	}
@@ -57,7 +57,7 @@ func New(r *url.URL, p parser.ServiceParse, l *log.Logger,
 
 // Crawl service get the urls and determine their links
 // it save them in sitemap graph
-func (s *Service) Crawl(u *url.URL, c *Config) {
+func (s *Service) Crawl(u *url.URL, c *CondConfig) {
 	defer s.wg.Done()
 
 	if c == nil {
