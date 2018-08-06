@@ -9,3 +9,6 @@ build:
 image:
 	docker build .  -t smap:latest
 
+test:
+	sh ./test.sh
+
