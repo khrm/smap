@@ -54,7 +54,7 @@ func New(r *url.URL, p parser.Parse, l *log.Logger,
 // it save them in sitemap graph
 func (s *service) Crawl(u *url.URL, c *config) {
 	defer s.wg.Done()
-	//	fmt.Println("Inside Crawl")
+
 	if c == nil {
 		if s.debug {
 			s.log.Println("config passed is nil")
@@ -76,7 +76,6 @@ func (s *service) Crawl(u *url.URL, c *config) {
 	urls, err := s.parser.ExtractURLs(clink)
 	if err != nil {
 		if s.debug {
-
 			s.log.Println("Crawler encountered an error", err,
 				"while crawling", clink)
 		}

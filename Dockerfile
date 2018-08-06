@@ -5,7 +5,7 @@ RUN mkdir -p /go/src/github.com/khrm/smap
 WORKDIR /go/src/github.com/khrm/smap
 ADD ./ /go/src/github.com/khrm/smap/
 
-RUN CGO_ENABLED=0 go build -a -ldflags "-s -w" -o /smap cmd/smap/*.go
+RUN CGO_ENABLED=0 go build -race -a -ldflags "-s -w" -o /smap cmd/smap/*.go
 
 
 FROM alpine:latest

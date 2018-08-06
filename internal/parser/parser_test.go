@@ -92,7 +92,7 @@ func (f *fakeClientInvalidContentTypeErr) Get(url string) (*http.Response,
 	resp.Header = make(map[string][]string)
 	resp.Header.Set("Content-Type", "text/csv")
 	resp.Body = ioutil.NopCloser(bytes.NewReader([]byte(HTMLData)))
-	return nil, errors.New("Failed to open page")
+	return resp, nil
 }
 
 func Test_parser_ExtractURLs(t *testing.T) {
@@ -149,6 +149,7 @@ func Test_parser_ExtractURLs(t *testing.T) {
 			p := &parser{
 				client: tt.fields.client,
 				log:    log.New(ioutil.Discard, "logger: ", log.Lshortfile),
+				debug:  true,
 			}
 			got, err := p.ExtractURLs(tt.args.url)
 			if (err != nil) != tt.wantErr {

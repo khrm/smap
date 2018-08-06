@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -50,9 +51,10 @@ func (m *mockParser) ExtractURLs(url string) ([]string, error) {
 	switch url {
 	case "https://goharbor.io":
 		return []string{"https://goharbor.io",
-			"https://goharbor.io/blogs",
+			"/blogs",
 			"https://goharbor.io/community",
-			"https://goharbor.io/docs"}, nil
+			"https://goharbor.io/docs",
+			"://wrongUrl"}, nil
 	case "https://goharbor.io/blogs":
 		return []string{"https://goharbor.io",
 			"https://goharbor.io/blogs",
@@ -80,8 +82,9 @@ func (m *mockParser) ExtractURLs(url string) ([]string, error) {
 			"https://goharbor.io/blogs",
 			"https://goharbor.io/community",
 			"https://goharbor.io/docs"}, nil
+	default:
+		return nil, errors.New("crawling failed")
 	}
-	return nil, nil
 }
 
 // TestNewConfig test function NewConfig
@@ -145,6 +148,7 @@ func Test_service_Crawl(t *testing.T) {
 	}
 
 	u, _ := url.Parse("https://goharbor.io")
+	uFail, _ := url.Parse("https://example.com")
 
 	l := log.New(ioutil.Discard, "logger: ", log.Lshortfile)
 
@@ -156,6 +160,13 @@ func Test_service_Crawl(t *testing.T) {
 	}
 
 	f2 := fields{
+		root:   u,
+		parser: &mockParser{},
+		log:    l,
+		SM:     sitemap.New(),
+	}
+
+	f3 := fields{
 		root:   u,
 		parser: &mockParser{},
 		log:    l,
@@ -220,6 +231,14 @@ func Test_service_Crawl(t *testing.T) {
 		Connections: make(map[string]map[string]struct{}),
 	}
 
+	want3 := sitemap.New()
+	want4 := &sitemap.SiteMap{
+		URLs: map[string]struct{}{
+			"https://example.com": {},
+		},
+		Connections: make(map[string]map[string]struct{}),
+	}
+
 	tests := []struct {
 		name   string
 		fields fields
@@ -250,6 +269,27 @@ func Test_service_Crawl(t *testing.T) {
 			},
 			want: want2,
 		},
+		{
+			name:   "Test_service_Crawl - 3 neg",
+			fields: f3,
+			args: args{
+				u: u,
+				c: nil,
+			},
+			want: want3,
+		},
+		{
+			name:   "Test_service_Crawl - 4 neg",
+			fields: f3,
+			args: args{
+				u: uFail,
+				c: &config{
+					true,
+					13,
+				},
+			},
+			want: want4,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -259,6 +299,7 @@ func Test_service_Crawl(t *testing.T) {
 				log:    tt.fields.log,
 				SM:     tt.fields.SM,
 				wg:     &wg,
+				debug:  true,
 			}
 			s.wg.Add(1)
 			go s.Crawl(tt.args.u, tt.args.c)
