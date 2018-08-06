@@ -4,6 +4,7 @@ go:
   - "1.10.x"
 script:
   - ./test.sh
+  - make
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

@@ -1,11 +1,11 @@
-# SMAP [![Go Report Card](https://goreportcard.com/badge/github.com/khrm/smap)](https://goreportcard.com/report/github.com/khrm/smap) [![Build Status](https://travis-ci.org/khrm/smap.svg?branch=master)](https://travis-ci.org/khrm/smap)
+# SMAP [![Go Report Card](https://goreportcard.com/badge/github.com/khrm/smap)](https://goreportcard.com/report/github.com/khrm/smap) [![Build Status](https://travis-ci.org/khrm/smap.svg?branch=master)](https://travis-ci.org/khrm/smap) [![codecov.io](http://codecov.io/github/khrm/smap/coverage.svg?branch=master)](http://codecov.io/github/khrm/smap?branch=master)
 
 <!-- MarkdownTOC -->
 
 - [What is it?](#what-is-it)
 - [Prerequisites](#prerequisites)
 - [Building](#building)
-- [Running(Go)](#running-go)
+- [Running(Binary)](#running-binary)
 - [Running(Docker)](#running-docker)
 
 <!-- /MarkdownTOC -->
@@ -91,12 +91,12 @@ Or you can use following commands if docker is installed.
 
 Which will you an image smap:latest.
 
-<a name="running-go"></a>
-## Running(Go)
+<a name="running-binary"></a>
+## Running(Binary)
 You can use :-
 
 ```shell
-   $ ./smap -domain=example.com -depth=3
+   $ ./smap -domain=goharbor.com -depth=3
 ```
 
 <a name="running-docker"></a>
@@ -104,7 +104,7 @@ You can use :-
 You can use :-
 
 ```shell
-   $ docker run -ti smap smap -domain=kubeless.io
+   $ docker run -ti smap smap -domain=goharbor.io
 
 ```
 
