@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"errors"
 	"log"
 	"net/url"
 	"strings"
@@ -8,6 +9,10 @@ import (
 
 	"github.com/khrm/smap/internal/parser"
 	"github.com/khrm/smap/internal/sitemap"
+)
+
+var (
+	errInvalidURL = errors.New("link isn't valid")
 )
 
 // Config is used to determine certain configs like
@@ -82,32 +87,10 @@ func (s *service) Crawl(u *url.URL, c *config) {
 	}
 
 	for i := range urls {
-		l, err := url.Parse(urls[i])
+		l, err := s.urlParse(u, urls[i])
 		if err != nil {
-			if s.debug {
-
-				s.log.Println("link:", urls[i], " isn't valid, err",
-					err)
-			}
 			continue
 		}
-
-		// If scheme isn't there we put current link scheme
-		if l.Scheme == "" {
-			l.Scheme = u.Scheme
-		}
-
-		// if host isn't there, we put current url's host
-		if l.Host == "" {
-			l.Host = u.Host
-		}
-
-		// Fragment means they are same url
-		l.Fragment = ""
-
-		// We remove trailing / as url with and without it are same
-		l.Path = strings.TrimRight(l.Path, "/")
-
 		link := l.String()
 		if c.RootOnly && strings.Contains(link, s.root.Host) {
 			cond := *c
@@ -118,4 +101,33 @@ func (s *service) Crawl(u *url.URL, c *config) {
 			s.SM.AddConnection(clink, link)
 		}
 	}
+}
+
+func (s *service) urlParse(r *url.URL, path string) (*url.URL, error) {
+	l, err := url.Parse(path)
+	if err != nil {
+		if s.debug {
+
+			s.log.Println("link:", path, " isn't valid, err",
+				err)
+		}
+		return nil, errInvalidURL
+	}
+
+	// If scheme isn't there we put current link scheme
+	if l.Scheme == "" {
+		l.Scheme = r.Scheme
+	}
+
+	// if host isn't there, we put current url's host
+	if l.Host == "" {
+		l.Host = r.Host
+	}
+
+	// Fragment means they are same url
+	l.Fragment = ""
+
+	// We remove trailing / as url with and without it are same
+	l.Path = strings.TrimRight(l.Path, "/")
+	return l, nil
 }
