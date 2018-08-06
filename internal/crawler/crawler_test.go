@@ -25,12 +25,12 @@ func TestNewConfig(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *config
+		want *Config
 	}{
 		{
 			name: "TestNewConfig - 1",
 			args: args{true, 3},
-			want: &config{
+			want: &Config{
 				RootOnly: true,
 				Depth:    3,
 			},
@@ -92,7 +92,7 @@ func (m *mockParser) ExtractURLs(url string) ([]string, error) {
 func TestNew(t *testing.T) {
 	type args struct {
 		r     *url.URL
-		p     parser.Parse
+		p     parser.Service
 		l     *log.Logger
 		s     *sitemap.SiteMap
 		wg    *sync.WaitGroup
@@ -104,7 +104,7 @@ func TestNew(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *service
+		want *Service
 	}{
 		{
 			name: "TestNew - 1",
@@ -116,7 +116,7 @@ func TestNew(t *testing.T) {
 				wg:    &wg,
 				debug: false,
 			},
-			want: &service{
+			want: &Service{
 				root:   u,
 				parser: &mockParser{},
 				log:    l,
@@ -138,13 +138,13 @@ func TestNew(t *testing.T) {
 func Test_service_Crawl(t *testing.T) {
 	type fields struct {
 		root   *url.URL
-		parser parser.Parse
+		parser parser.Service
 		log    *log.Logger
 		SM     *sitemap.SiteMap
 	}
 	type args struct {
 		u *url.URL
-		c *config
+		c *Config
 	}
 
 	u, _ := url.Parse("https://goharbor.io")
@@ -250,7 +250,7 @@ func Test_service_Crawl(t *testing.T) {
 			fields: f1,
 			args: args{
 				u: u,
-				c: &config{
+				c: &Config{
 					true,
 					13,
 				},
@@ -262,7 +262,7 @@ func Test_service_Crawl(t *testing.T) {
 			fields: f2,
 			args: args{
 				u: u,
-				c: &config{
+				c: &Config{
 					true,
 					0,
 				},
@@ -283,7 +283,7 @@ func Test_service_Crawl(t *testing.T) {
 			fields: f3,
 			args: args{
 				u: uFail,
-				c: &config{
+				c: &Config{
 					true,
 					13,
 				},
@@ -293,7 +293,7 @@ func Test_service_Crawl(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &service{
+			s := &Service{
 				root:   tt.fields.root,
 				parser: tt.fields.parser,
 				log:    tt.fields.log,

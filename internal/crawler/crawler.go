@@ -18,34 +18,34 @@ var (
 // Config is used to determine certain configs like
 // whether only root url are going to be extracted
 // depth of the query
-type config struct {
+type Config struct {
 	RootOnly bool
 	Depth    int
 }
 
-// service contains detail needed for crawler service
-type service struct {
+// NewConfig gives an instance of config
+func NewConfig(r bool, d int) *Config {
+	return &Config{
+		RootOnly: r,
+		Depth:    d,
+	}
+}
+
+// Service contains detail needed for crawler Service
+type Service struct {
 	root   *url.URL
-	parser parser.Parse
+	parser parser.Service
 	log    *log.Logger
 	SM     *sitemap.SiteMap
 	wg     *sync.WaitGroup
 	debug  bool
 }
 
-// NewConfig gives an instance of config
-func NewConfig(r bool, d int) *config {
-	return &config{
-		RootOnly: r,
-		Depth:    d,
-	}
-}
-
 // New gives an instance of crawler.service needed to crawl documents
 // and put them into sitemap graph
-func New(r *url.URL, p parser.Parse, l *log.Logger,
-	s *sitemap.SiteMap, wg *sync.WaitGroup, debug bool) *service {
-	return &service{
+func New(r *url.URL, p parser.Service, l *log.Logger,
+	s *sitemap.SiteMap, wg *sync.WaitGroup, debug bool) *Service {
+	return &Service{
 		root:   r,
 		parser: p,
 		log:    l,
@@ -57,7 +57,7 @@ func New(r *url.URL, p parser.Parse, l *log.Logger,
 
 // Crawl service get the urls and determine their links
 // it save them in sitemap graph
-func (s *service) Crawl(u *url.URL, c *config) {
+func (s *Service) Crawl(u *url.URL, c *Config) {
 	defer s.wg.Done()
 
 	if c == nil {
@@ -103,11 +103,10 @@ func (s *service) Crawl(u *url.URL, c *config) {
 	}
 }
 
-func (s *service) urlParse(r *url.URL, path string) (*url.URL, error) {
+func (s *Service) urlParse(r *url.URL, path string) (*url.URL, error) {
 	l, err := url.Parse(path)
 	if err != nil {
 		if s.debug {
-
 			s.log.Println("link:", path, " isn't valid, err",
 				err)
 		}

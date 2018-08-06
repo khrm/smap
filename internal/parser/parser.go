@@ -21,9 +21,9 @@ type transportClient interface {
 	Get(url string) (resp *http.Response, err error)
 }
 
-// Parse is the interface which satisfy the service of extracting
+// ParserService is the interface which satisfy the service of extracting
 // URLS from HTML
-type Parse interface {
+type Service interface {
 	ExtractURLs(url string) ([]string, error)
 }
 
@@ -34,7 +34,7 @@ type parser struct {
 }
 
 // New returns a new parser used for links extractions
-func New(client transportClient, l *log.Logger, debug bool) *parser {
+func New(client transportClient, l *log.Logger, debug bool) Service {
 	return &parser{
 		client: client,
 		log:    l,
