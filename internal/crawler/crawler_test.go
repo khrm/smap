@@ -92,7 +92,7 @@ func (m *mockParser) ExtractURLs(url string) ([]string, error) {
 func TestNew(t *testing.T) {
 	type args struct {
 		r     *url.URL
-		p     parser.Service
+		p     parser.ServiceParse
 		l     *log.Logger
 		s     *sitemap.SiteMap
 		wg    *sync.WaitGroup
@@ -138,7 +138,7 @@ func TestNew(t *testing.T) {
 func Test_service_Crawl(t *testing.T) {
 	type fields struct {
 		root   *url.URL
-		parser parser.Service
+		parser parser.ServiceParse
 		log    *log.Logger
 		SM     *sitemap.SiteMap
 	}

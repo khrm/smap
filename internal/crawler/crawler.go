@@ -34,7 +34,7 @@ func NewConfig(r bool, d int) *Config {
 // Service contains detail needed for crawler Service
 type Service struct {
 	root   *url.URL
-	parser parser.Service
+	parser parser.ServiceParse
 	log    *log.Logger
 	SM     *sitemap.SiteMap
 	wg     *sync.WaitGroup
@@ -43,7 +43,7 @@ type Service struct {
 
 // New gives an instance of crawler.service needed to crawl documents
 // and put them into sitemap graph
-func New(r *url.URL, p parser.Service, l *log.Logger,
+func New(r *url.URL, p parser.ServiceParse, l *log.Logger,
 	s *sitemap.SiteMap, wg *sync.WaitGroup, debug bool) *Service {
 	return &Service{
 		root:   r,
