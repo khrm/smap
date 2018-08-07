@@ -37,28 +37,26 @@ type Service struct {
 	parser parser.ServiceParse
 	log    *log.Logger
 	SM     *sitemap.SiteMap
-	wg     *sync.WaitGroup
 	debug  bool
 }
 
 // New gives an instance of crawler.service needed to crawl documents
 // and put them into sitemap graph
 func New(r *url.URL, p parser.ServiceParse, l *log.Logger,
-	s *sitemap.SiteMap, wg *sync.WaitGroup, debug bool) *Service {
+	s *sitemap.SiteMap, debug bool) *Service {
 	return &Service{
 		root:   r,
 		parser: p,
 		log:    l,
 		SM:     s,
-		wg:     wg,
 		debug:  debug,
 	}
 }
 
 // Crawl service get the urls and determine their links
 // it save them in sitemap graph
-func (s *Service) Crawl(u *url.URL, c *CondConfig) {
-	defer s.wg.Done()
+func (s *Service) Crawl(u *url.URL, c *CondConfig, wg *sync.WaitGroup) {
+	defer wg.Done()
 
 	if c == nil {
 		if s.debug {
@@ -74,7 +72,7 @@ func (s *Service) Crawl(u *url.URL, c *CondConfig) {
 		return
 	}
 
-	if c.depth <= 0 {
+	if c.depth == 0 {
 		return
 	}
 
@@ -96,8 +94,8 @@ func (s *Service) Crawl(u *url.URL, c *CondConfig) {
 			cond := *c
 			// Reducing the depth
 			cond.depth = cond.depth - 1
-			s.wg.Add(1)
-			go s.Crawl(l, &cond)
+			wg.Add(1)
+			go s.Crawl(l, &cond, wg)
 			s.SM.AddConnection(clink, link)
 		}
 	}

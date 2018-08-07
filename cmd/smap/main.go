@@ -29,14 +29,13 @@ var (
 			ResponseHeaderTimeout: 10 * time.Second,
 		},
 	}
+	wg = &sync.WaitGroup{}
 )
-
-var wg sync.WaitGroup
 
 func main() {
 	// Getting configuration
 	domain := flag.String("domain", "goharbor.io", "domain to crawl")
-	depth := flag.Int("depth", 3, "depth to crawl")
+	depth := flag.Int("depth", -3, "depth to crawl")
 	root := flag.Bool("root", true, "restrict to only domain given")
 	debug := flag.Bool("debug", false, "whether to print everything")
 	scheme := flag.String("scheme", "https",
@@ -48,16 +47,12 @@ func main() {
 
 	p := parser.New(httpClient, logger, *debug)
 
-	s := sitemap.New()
+	sm := sitemap.New()
 	c := crawler.NewConfig(*root, *depth)
 	u, err := url.Parse(*domain)
 	if err != nil {
 		log.Println("Failed")
 
-	}
-
-	if *depth < 1 {
-		logger.Println("Invalid depth entered")
 	}
 
 	if u.Scheme == "" {
@@ -69,11 +64,12 @@ func main() {
 		u.Path = ""
 	}
 
-	cl := crawler.New(u, p, logger, s, &wg, *debug)
+	cl := crawler.New(u, p, logger, sm, *debug)
 
 	wg.Add(1)
-	go cl.Crawl(u, c)
+	go cl.Crawl(u, c, wg)
 	wg.Wait()
+
 	data, err := json.MarshalIndent(cl.SM, "  ", "    ")
 	if err != nil {
 		log.Println("error marshaling data to json", err)
