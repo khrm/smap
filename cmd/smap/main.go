@@ -34,6 +34,7 @@ var (
 var wg sync.WaitGroup
 
 func main() {
+	// Getting configuration
 	domain := flag.String("domain", "goharbor.io", "domain to crawl")
 	depth := flag.Int("depth", 3, "depth to crawl")
 	root := flag.Bool("root", true, "restrict to only domain given")

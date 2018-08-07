@@ -19,15 +19,15 @@ var (
 // configs like whether only root url are going to be
 // extracted or depth of the query
 type CondConfig struct {
-	RootOnly bool
-	Depth    int
+	rootOnly bool
+	depth    int
 }
 
 // NewConfig gives an instance of config
 func NewConfig(r bool, d int) *CondConfig {
 	return &CondConfig{
-		RootOnly: r,
-		Depth:    d,
+		rootOnly: r,
+		depth:    d,
 	}
 }
 
@@ -74,7 +74,7 @@ func (s *Service) Crawl(u *url.URL, c *CondConfig) {
 		return
 	}
 
-	if c.Depth <= 0 {
+	if c.depth <= 0 {
 		return
 	}
 
@@ -92,10 +92,10 @@ func (s *Service) Crawl(u *url.URL, c *CondConfig) {
 			continue
 		}
 		link := l.String()
-		if c.RootOnly && strings.Contains(link, s.root.Host) {
+		if c.rootOnly && strings.Contains(link, s.root.Host) {
 			cond := *c
 			// Reducing the depth
-			cond.Depth = cond.Depth - 1
+			cond.depth = cond.depth - 1
 			s.wg.Add(1)
 			go s.Crawl(l, &cond)
 			s.SM.AddConnection(clink, link)

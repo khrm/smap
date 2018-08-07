@@ -31,8 +31,8 @@ func TestNewConfig(t *testing.T) {
 			name: "TestNewConfig - 1",
 			args: args{true, 3},
 			want: &CondConfig{
-				RootOnly: true,
-				Depth:    3,
+				rootOnly: true,
+				depth:    3,
 			},
 		},
 	}
