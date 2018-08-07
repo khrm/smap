@@ -72,6 +72,7 @@ func (m *mockParser) ExtractURLs(url string) ([]string, error) {
 		return []string{"https://goharbor.io",
 			"https://goharbor.io/blogs",
 			"https://goharbor.io/community",
+			"https://nonrooturl/won'tgetadded",
 			"https://goharbor.io/docs"}, nil
 	case "https://goharbor.io/community":
 		return []string{"https://goharbor.io",
