@@ -9,6 +9,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/fortytw2/leaktest"
 	"github.com/khrm/smap/internal/parser"
 	"github.com/khrm/smap/internal/sitemap"
 )
@@ -136,6 +137,9 @@ func TestNew(t *testing.T) {
 }
 
 func Test_service_Crawl(t *testing.T) {
+
+	defer leaktest.Check(t)()
+
 	type fields struct {
 		root   *url.URL
 		parser parser.ServiceParse

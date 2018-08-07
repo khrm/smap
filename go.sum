@@ -1,2 +1,4 @@
-golang.org/x/net v0.0.0-20180801234040-f4c29de78a2a h1:8fCF9zjAir2SP3N+axz9xs+0r4V8dqPzqsWO10t8zoo=
-golang.org/x/net v0.0.0-20180801234040-f4c29de78a2a/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+github.com/fortytw2/leaktest v1.2.0 h1:cj6GCiwJDH7l3tMHLjZDo0QqPtrXJiWSI9JgpeQKw+Q=
+github.com/fortytw2/leaktest v1.2.0/go.mod h1:jDsjWgpAGjm2CA7WthBh/CdZYEPF31XHquHwclZch5g=
+golang.org/x/net v0.0.0-20180807145015-19491d39cadb h1:H5qWxL6CeEdaEGPqB5nnxJja1ULIcpuu91vIqAuGoJ0=
+golang.org/x/net v0.0.0-20180807145015-19491d39cadb/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
