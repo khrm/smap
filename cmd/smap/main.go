@@ -9,12 +9,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/khrm/smap/internal/crawler"
 	"github.com/khrm/smap/internal/parser"
-	"github.com/khrm/smap/internal/sitemap"
 )
 
 var (
@@ -29,7 +27,6 @@ var (
 			ResponseHeaderTimeout: 10 * time.Second,
 		},
 	}
-	wg = &sync.WaitGroup{}
 )
 
 func main() {
@@ -47,8 +44,7 @@ func main() {
 
 	p := parser.New(httpClient, logger, *debug)
 
-	sm := sitemap.New()
-	c := crawler.NewConfig(*root, *depth)
+	c := crawler.NewConfig(*root, *depth, *debug)
 	u, err := url.Parse(*domain)
 	if err != nil {
 		log.Println("Failed")
@@ -64,20 +60,18 @@ func main() {
 		u.Path = ""
 	}
 
-	cl := crawler.New(u, p, logger, sm, *debug)
+	crawl := crawler.New(u, p, logger, c)
 
-	wg.Add(1)
-	go cl.Crawl(u, c, wg)
-	wg.Wait()
+	sm := crawl.Start()
 
-	data, err := json.MarshalIndent(cl.SM, "  ", "    ")
+	data, err := json.MarshalIndent(sm, "  ", "    ")
 	if err != nil {
 		log.Println("error marshaling data to json", err)
 	}
 	fmt.Println(string(data))
 
 	if *stdXMLSiteMap {
-		xsm, err := cl.SM.ToXMLSTDSiteMap()
+		xsm, err := sm.ToXMLSTDSiteMap()
 		if err != nil {
 			log.Println("error marshaling data to xml", err)
 		}

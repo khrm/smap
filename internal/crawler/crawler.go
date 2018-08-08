@@ -21,13 +21,15 @@ var (
 type CondConfig struct {
 	rootOnly bool
 	depth    int
+	debug    bool
 }
 
 // NewConfig gives an instance of config
-func NewConfig(r bool, d int) *CondConfig {
+func NewConfig(r bool, d int, debug bool) *CondConfig {
 	return &CondConfig{
 		rootOnly: r,
 		depth:    d,
+		debug:    debug,
 	}
 }
 
@@ -36,38 +38,45 @@ type Service struct {
 	root   *url.URL
 	parser parser.ServiceParse
 	log    *log.Logger
-	SM     *sitemap.SiteMap
-	debug  bool
+	sm     *sitemap.SiteMap
+	c      *CondConfig
 }
 
 // New gives an instance of crawler.service needed to crawl documents
 // and put them into sitemap graph
 func New(r *url.URL, p parser.ServiceParse, l *log.Logger,
-	s *sitemap.SiteMap, debug bool) *Service {
+	c *CondConfig) *Service {
 	return &Service{
 		root:   r,
 		parser: p,
 		log:    l,
-		SM:     s,
-		debug:  debug,
+		sm:     sitemap.New(),
+		c:      c,
 	}
 }
 
-// Crawl service get the urls and determine their links
-// it save them in sitemap graph
-func (s *Service) Crawl(u *url.URL, c *CondConfig, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	if c == nil {
-		if s.debug {
-			s.log.Println("config passed is nil")
-		}
-		return
+// Start the crawl service and save them the links find
+// in the sitemap graph
+func (s *Service) Start() (sm *sitemap.SiteMap) {
+	if s.c == nil {
+		s.log.Println("config passed is nil")
+		return nil
 	}
 
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	s.crawl(s.root, s.c, wg)
+	wg.Wait()
+	return s.sm
+}
+
+// crawl service get the urls and determine their links
+// it save them in sitemap graph
+func (s *Service) crawl(u *url.URL, c *CondConfig, wg *sync.WaitGroup) {
+	defer wg.Done()
 	//current link
 	clink := u.String()
-	ok := s.SM.AddURL(clink)
+	ok := s.sm.AddURL(clink)
 	if !ok {
 		return
 	}
@@ -78,7 +87,7 @@ func (s *Service) Crawl(u *url.URL, c *CondConfig, wg *sync.WaitGroup) {
 
 	urls, err := s.parser.ExtractURLs(clink)
 	if err != nil {
-		if s.debug {
+		if s.c.debug {
 			s.log.Println("Crawler encountered an error", err,
 				"while crawling", clink)
 		}
@@ -95,8 +104,8 @@ func (s *Service) Crawl(u *url.URL, c *CondConfig, wg *sync.WaitGroup) {
 			// Reducing the depth
 			cond.depth = cond.depth - 1
 			wg.Add(1)
-			go s.Crawl(l, &cond, wg)
-			s.SM.AddConnection(clink, link)
+			go s.crawl(l, &cond, wg)
+			s.sm.AddConnection(clink, link)
 		}
 	}
 }
@@ -104,7 +113,7 @@ func (s *Service) Crawl(u *url.URL, c *CondConfig, wg *sync.WaitGroup) {
 func (s *Service) urlParse(r *url.URL, path string) (*url.URL, error) {
 	l, err := url.Parse(path)
 	if err != nil {
-		if s.debug {
+		if s.c.debug {
 			s.log.Println("link:", path, " isn't valid, err",
 				err)
 		}
