@@ -18,7 +18,7 @@ import (
 func TestNewConfig(t *testing.T) {
 	type args struct {
 		r     bool
-		d     int
+		d     *int
 		debug bool
 	}
 	tests := []struct {
@@ -28,10 +28,10 @@ func TestNewConfig(t *testing.T) {
 	}{
 		{
 			name: "TestNewConfig - 1",
-			args: args{true, 3, true},
+			args: args{true, nil, true},
 			want: &CondConfig{
 				rootOnly: true,
-				depth:    3,
+				depth:    nil,
 				debug:    true,
 			},
 		},
@@ -224,19 +224,25 @@ func Test_service_Start(t *testing.T) {
 		},
 	}
 
-	want2 := &sitemap.SiteMap{
+	want2 := want1
+
+	want3 := &sitemap.SiteMap{
 		URLs: map[string]struct{}{
 			"https://goharbor.io": {},
 		},
 		Connections: make(map[string]map[string]struct{}),
 	}
 
-	want4 := &sitemap.SiteMap{
+	want5 := &sitemap.SiteMap{
 		URLs: map[string]struct{}{
 			"https://example.com": {},
 		},
 		Connections: make(map[string]map[string]struct{}),
 	}
+
+	depth := 13
+	depth2 := 0
+	depth4 := 13
 
 	tests := []struct {
 		name   string
@@ -251,7 +257,7 @@ func Test_service_Start(t *testing.T) {
 				u: u,
 				c: &CondConfig{
 					true,
-					13,
+					&depth,
 					true,
 				},
 				sm: sitemap.New(),
@@ -259,13 +265,13 @@ func Test_service_Start(t *testing.T) {
 			want: want1,
 		},
 		{
-			name:   "Test_service_Crawl - 2 neg",
+			name:   "Test_service_Crawl - 2 pos",
 			fields: f2,
 			args: args{
 				u: u,
 				c: &CondConfig{
 					true,
-					0,
+					nil,
 					true,
 				},
 				sm: sitemap.New(),
@@ -274,6 +280,20 @@ func Test_service_Start(t *testing.T) {
 		},
 		{
 			name:   "Test_service_Crawl - 3 neg",
+			fields: f2,
+			args: args{
+				u: u,
+				c: &CondConfig{
+					true,
+					&depth2,
+					true,
+				},
+				sm: sitemap.New(),
+			},
+			want: want3,
+		},
+		{
+			name:   "Test_service_Crawl - 4 neg",
 			fields: f3,
 			args: args{
 				u:  u,
@@ -283,18 +303,18 @@ func Test_service_Start(t *testing.T) {
 			want: nil,
 		},
 		{
-			name:   "Test_service_Crawl - 4 neg",
+			name:   "Test_service_Crawl - 5 neg",
 			fields: f4,
 			args: args{
 				u: uFail,
 				c: &CondConfig{
 					true,
-					13,
+					&depth4,
 					true,
 				},
 				sm: sitemap.New(),
 			},
-			want: want4,
+			want: want5,
 		},
 	}
 	for _, tt := range tests {

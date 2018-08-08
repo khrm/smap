@@ -20,12 +20,12 @@ var (
 // extracted or depth of the query
 type CondConfig struct {
 	rootOnly bool
-	depth    int
+	depth    *int
 	debug    bool
 }
 
 // NewConfig gives an instance of config
-func NewConfig(r bool, d int, debug bool) *CondConfig {
+func NewConfig(r bool, d *int, debug bool) *CondConfig {
 	return &CondConfig{
 		rootOnly: r,
 		depth:    d,
@@ -81,8 +81,15 @@ func (s *Service) crawl(u *url.URL, c *CondConfig, wg *sync.WaitGroup) {
 		return
 	}
 
-	if c.depth == 0 {
+	var depth *int
+
+	if c.depth != nil && *c.depth == 0 {
 		return
+	} else if c.depth == nil {
+		depth = nil
+	} else {
+		d := *c.depth - 1
+		depth = &d
 	}
 
 	urls, err := s.parser.ExtractURLs(clink)
@@ -101,8 +108,8 @@ func (s *Service) crawl(u *url.URL, c *CondConfig, wg *sync.WaitGroup) {
 		link := l.String()
 		if c.rootOnly && strings.Contains(link, s.root.Host) {
 			cond := *c
-			// Reducing the depth
-			cond.depth = cond.depth - 1
+			// add the reduced depth
+			cond.depth = depth
 			wg.Add(1)
 			go s.crawl(l, &cond, wg)
 			s.sm.AddConnection(clink, link)

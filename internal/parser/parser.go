@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/html"
 )
@@ -28,23 +29,36 @@ type ServiceParse interface {
 }
 
 type parser struct {
-	log    *log.Logger
-	client transportClient
-	debug  bool
+	log        *log.Logger
+	client     transportClient
+	debug      bool
+	concurrent uint
+	cond       *sync.Cond
 }
 
 // New returns a new parser used for links extractions
-func New(client transportClient, l *log.Logger, debug bool) ServiceParse {
+func New(client transportClient, l *log.Logger, debug bool,
+	p uint) ServiceParse {
 	return &parser{
-		client: client,
-		log:    l,
-		debug:  debug,
+		client:     client,
+		log:        l,
+		debug:      debug,
+		concurrent: p,
+		cond:       sync.NewCond(&sync.Mutex{}),
 	}
 }
 
 // ExtractURLs make request to url and fetch response
 // response is used to get links if it is html
 func (p *parser) ExtractURLs(url string) ([]string, error) {
+	p.cond.L.Lock()
+	for p.concurrent == 0 {
+		p.cond.Wait()
+	}
+	p.concurrent--
+	p.cond.L.Unlock()
+	defer p.finished()
+
 	resp, err := p.client.Get(url)
 	if err != nil {
 		if p.debug {
@@ -68,6 +82,16 @@ func (p *parser) ExtractURLs(url string) ([]string, error) {
 	}
 
 	return p.linksInBody(resp.Body), nil
+}
+
+// finished locks the parser and increment the counter
+// also broadcast after doing these and unlocks the parser
+func (p *parser) finished() {
+	p.cond.L.Lock()
+	defer p.cond.L.Unlock()
+	p.concurrent++
+	p.cond.Broadcast()
+
 }
 
 // linksInBody get all links present in a html document

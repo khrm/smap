@@ -32,7 +32,8 @@ var (
 func main() {
 	// Getting configuration
 	domain := flag.String("domain", "goharbor.io", "domain to crawl")
-	depth := flag.Int("depth", -3, "depth to crawl")
+	depth := flag.Int("depth", -1, "depth to crawl")
+	concurrent := flag.Uint("concurrent", 3, "nbrof concurrent request")
 	root := flag.Bool("root", true, "restrict to only domain given")
 	debug := flag.Bool("debug", false, "whether to print everything")
 	scheme := flag.String("scheme", "https",
@@ -42,9 +43,13 @@ func main() {
 
 	flag.Parse()
 
-	p := parser.New(httpClient, logger, *debug)
+	p := parser.New(httpClient, logger, *debug, *concurrent)
 
-	c := crawler.NewConfig(*root, *depth, *debug)
+	if *depth == -1 {
+		depth = nil
+	}
+
+	c := crawler.NewConfig(*root, depth, *debug)
 	u, err := url.Parse(*domain)
 	if err != nil {
 		log.Println("Failed")

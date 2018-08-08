@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 )
 
@@ -19,6 +20,7 @@ func TestNew(t *testing.T) {
 		client transportClient
 		l      *log.Logger
 		debug  bool
+		p      uint
 	}
 	tests := []struct {
 		name string
@@ -31,17 +33,20 @@ func TestNew(t *testing.T) {
 				client: &http.Client{},
 				l:      log.New(os.Stdout, "logger: ", log.Lshortfile),
 				debug:  true,
+				p:      2,
 			},
 			want: &parser{
-				client: &http.Client{},
-				log:    log.New(os.Stdout, "logger: ", log.Lshortfile),
-				debug:  true,
+				client:     &http.Client{},
+				log:        log.New(os.Stdout, "logger: ", log.Lshortfile),
+				debug:      true,
+				concurrent: 2,
+				cond:       sync.NewCond(&sync.Mutex{}),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.args.client, tt.args.l, true); !reflect.DeepEqual(got, tt.want) {
+			if got := New(tt.args.client, tt.args.l, tt.args.debug, tt.args.p); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("New() = %v, want %v", got, tt.want)
 			}
 		})
@@ -147,9 +152,11 @@ func Test_parser_ExtractURLs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := &parser{
-				client: tt.fields.client,
-				log:    log.New(ioutil.Discard, "logger: ", log.Lshortfile),
-				debug:  true,
+				client:     tt.fields.client,
+				log:        log.New(ioutil.Discard, "logger: ", log.Lshortfile),
+				debug:      true,
+				concurrent: 2,
+				cond:       sync.NewCond(&sync.Mutex{}),
 			}
 			got, err := p.ExtractURLs(tt.args.url)
 			if (err != nil) != tt.wantErr {
@@ -223,6 +230,12 @@ var (
 		<li><a href="http://gutenberg.net/">Gutenberg</a> contains many great novels in public domains.</li>
 		<li><a href="http://archive.org">Archive.org</a> is a great place to get other stuff in public domains.</li>
 	</ul>
+<!--
+
+<li><a href="http://disqus.org">Discuss</a> is a great place to comment.</li>
+
+-->
+
 </article>
 
 </body>
