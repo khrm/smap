@@ -9,8 +9,10 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"runtime"
 	"sync"
 	"testing"
+	"time"
 )
 
 // TestNew test the creation of Parser object
@@ -168,6 +170,64 @@ func Test_parser_ExtractURLs(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_parser_ExtractURLsParallel(t *testing.T) {
+	type fields struct {
+		client transportClient
+	}
+	type args struct {
+		url string
+	}
+
+	test := struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		name:   "Concurrent Clients Test",
+		fields: fields{&fakeClient{}},
+		args:   args{"test-url"},
+	}
+
+	t.Run(test.name, func(t *testing.T) {
+		p := &parser{
+			client:     test.fields.client,
+			log:        log.New(ioutil.Discard, "logger: ", log.Lshortfile),
+			debug:      true,
+			concurrent: 2,
+			cond:       sync.NewCond(&sync.Mutex{}),
+		}
+
+		for i := 0; i < 100; i++ {
+			go func() {
+				p.ExtractURLs(test.args.url)
+			}()
+		}
+		p.cond.L.Lock()
+		if p.concurrent >= 2 && runtime.NumGoroutine() > 3 {
+			t.Errorf("p.concurrent %d, want %d", p.concurrent, 0)
+		}
+		p.cond.L.Unlock()
+
+		counter := 0
+
+		lockInFor := func() bool {
+			p.cond.L.Lock()
+			return true
+		}
+
+		for lockInFor() && runtime.NumGoroutine() != 1 && p.concurrent != 2 {
+			counter++
+			time.Sleep(time.Second)
+			p.cond.L.Unlock()
+		}
+
+		if counter <= 2 {
+			t.Errorf("counter %d got %d want", counter, 2)
+		}
+
+	})
 }
 
 func Test_parser_linksInBody(t *testing.T) {
